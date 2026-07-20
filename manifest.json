@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "AI Text Improver",
+  "version": "1.0.0",
+  "description": "Улучшение стиля и исправление ошибок в тексте с помощью ИИ (OpenRouter)",
+  "permissions": [
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://openrouter.ai/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "styles.css"
+      ],
+      "matches": [
+        "<all_urls>"
+      ]
+    }
+  ]
+}
