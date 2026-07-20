@@ -193,6 +193,7 @@
   const btnShort = createSecondaryBtn('Короче', 'length_shorten');
   const btnLong = createSecondaryBtn('Длиннее', 'length_expand');
   const btnEn = createSecondaryBtn('EN', 'translate_english');
+  const btnRu = createSecondaryBtn('RU', 'translate_russian');
 
   moreOptionsWrap.appendChild(btnProf);
   moreOptionsWrap.appendChild(btnFriendly);
@@ -209,6 +210,7 @@
   moreOptionsWrap.appendChild(btnShort);
   moreOptionsWrap.appendChild(btnLong);
   moreOptionsWrap.appendChild(btnEn);
+  moreOptionsWrap.appendChild(btnRu);
 
   panelMenu.appendChild(mainWrap);
   panelMenu.appendChild(moreOptionsWrap);
@@ -432,7 +434,7 @@
           // Строим ключ выделения, чтобы не перерисовывать виджет при каждом цикле поллинга
           const key = 'std:' + start + '|' + end + ':' + el.value.substring(Math.max(0, start - 10), Math.min(el.value.length, end + 10));
           if (key === currentSelectionKey && panelMenu.style.display !== 'none') {
-            positionTooltip();
+            // positionTooltip(); // Убрано для предотвращения дрожания виджета
           } else if (key !== currentSelectionKey) {
             currentSelectionKey = key;
             state.activeElement = el;
@@ -460,7 +462,7 @@
           const range = sel.getRangeAt(0).cloneRange();
           const key = 'ce:' + text.substring(0, 30);
           if (key === currentSelectionKey && panelMenu.style.display !== 'none') {
-            positionTooltip();
+            // positionTooltip(); // Убрано для предотвращения дрожания виджета
           } else if (key !== currentSelectionKey) {
             currentSelectionKey = key;
             state.activeElement = el;
@@ -491,7 +493,7 @@
 
         const key = 'gen:' + text.substring(0, 30);
         if (key === currentSelectionKey && panelMenu.style.display !== 'none') {
-          positionTooltip();
+          // positionTooltip(); // Убрано для предотвращения дрожания виджета
         } else if (key !== currentSelectionKey) {
           currentSelectionKey = key;
           state.activeElement = null;
@@ -530,7 +532,8 @@
       'tone_casual': 'Повседневный тон:',
       'length_shorten': 'Краткий вариант:',
       'length_expand': 'Развернутый вариант:',
-      'translate_english': 'Перевод на английский:'
+      'translate_english': 'Перевод на английский:',
+      'translate_russian': 'Перевод на русский:'
     };
     resultLabel.textContent = modeLabels[mode] || 'Результат:';
 
