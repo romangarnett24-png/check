@@ -31,6 +31,15 @@
   let currentSelectionKey = '';
   let lastActiveElement = null; // Для сохранения фокуса последнего редактируемого поля
 
+  // Отслеживание состояния выделения текста пользователем
+  let isSelectingWithMouse = false;
+  let isSelectingWithKeyboard = false;
+
+  document.addEventListener('mousedown', () => { isSelectingWithMouse = true; });
+  document.addEventListener('mouseup', () => { isSelectingWithMouse = false; });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Shift') isSelectingWithKeyboard = true; });
+  document.addEventListener('keyup', (e) => { if (e.key === 'Shift') isSelectingWithKeyboard = false; });
+
   // Отслеживаем последний активный элемент
   document.addEventListener('focusin', (e) => {
     // Игнорируем фокус внутри нашего Shadow DOM
@@ -420,6 +429,9 @@
   function pollSelection() {
     // Если виджет занят загрузкой, показом результата или ошибки — игнорируем новые выделения
     if (panelLoading.style.display !== 'none' || panelResult.style.display !== 'none' || panelError.style.display !== 'none') return;
+
+    // Если пользователь в процессе выделения текста мышью или клавиатурой — ждём
+    if (isSelectingWithMouse || isSelectingWithKeyboard) return;
 
     const el = document.activeElement;
 
