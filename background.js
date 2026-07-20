@@ -1,9 +1,7 @@
 // =============================================
 // background.js — Фоновый сервис-воркер (Service Worker)
-// Обрабатывает запросы к API OpenRouter от content script
+// Обрабатывает запросы к API OpenRouter и Google AI Studio
 // =============================================
-
-const OPENROUTER_API_KEY = 'YOUR_API_KEY_HERE'; // Замените на ваш собственный API-ключ
 
 // Системные промпты для каждого режима
 const SYSTEM_PROMPTS = {
@@ -44,7 +42,48 @@ const FALLBACK_MODELS = [
   'qwen/qwen-2.5-72b-instruct:free'
 ];
 
-async function queryOpenRouter(userText, mode) {
+async function queryGoogle(userText, mode, apiKey) {
+  if (!apiKey) throw new Error('API ключ Google (Gemini) не настроен');
+  const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.fix;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+  const requestBody = {
+    system_instruction: {
+      parts: { text: systemPrompt }
+    },
+    contents: [{
+      parts: [{ text: userText }]
+    }],
+    generationConfig: {
+      temperature: 0.3,
+      maxOutputTokens: 2048
+    }
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(requestBody)
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData?.error?.message || `Google API ошибка: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  const data = await response.json();
+  if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts[0].text) {
+    throw new Error('Неожиданный формат ответа от Google API');
+  }
+
+  return data.candidates[0].content.parts[0].text.trim();
+}
+
+async function queryOpenRouter(userText, mode, apiKey) {
+  if (!apiKey) throw new Error('API ключ OpenRouter не настроен');
   const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.fix;
 
   const requestBody = {
@@ -61,7 +100,7 @@ async function queryOpenRouter(userText, mode) {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       'HTTP-Referer': 'https://text-ai-assistant.ext',
       'X-Title': 'AI Text Assistant',
     },
@@ -96,13 +135,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return false;
     }
 
-    queryOpenRouter(text, mode)
-      .then((resultText) => {
+    chrome.storage.local.get(['primaryProvider', 'googleApiKey', 'openrouterApiKey'], async (result) => {
+      const provider = result.primaryProvider || 'google';
+      const googleKey = result.googleApiKey;
+      const orKey = result.openrouterApiKey;
+
+      let firstAttempt, secondAttempt;
+      let firstKey, secondKey;
+
+      if (provider === 'google') {
+        firstAttempt = queryGoogle;
+        firstKey = googleKey;
+        secondAttempt = queryOpenRouter;
+        secondKey = orKey;
+      } else {
+        firstAttempt = queryOpenRouter;
+        firstKey = orKey;
+        secondAttempt = queryGoogle;
+        secondKey = googleKey;
+      }
+
+      try {
+        const resultText = await firstAttempt(text, mode, firstKey);
         sendResponse({ success: true, text: resultText });
-      })
-      .catch((error) => {
-        sendResponse({ success: false, error: error.message });
-      });
+      } catch (err1) {
+        console.error('Первый провайдер не ответил:', err1);
+        try {
+          // Если первый провалился, пробуем второй
+          const resultText2 = await secondAttempt(text, mode, secondKey);
+          sendResponse({ success: true, text: resultText2 });
+        } catch (err2) {
+          console.error('Второй провайдер также не ответил:', err2);
+          sendResponse({ success: false, error: `Оба провайдера недоступны. Ошибка 1: ${err1.message}. Ошибка 2: ${err2.message}` });
+        }
+      }
+    });
 
     return true;
   }

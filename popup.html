@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Настройки AI Text Improver</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Настройки API-ключей</h2>
+
+    <div class="form-group">
+      <label for="provider">Основной провайдер ИИ:</label>
+      <select id="provider">
+        <option value="google">Google AI Studio (Gemini)</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="google-key">Ключ Google AI Studio (Gemini):</label>
+      <input type="password" id="google-key" placeholder="AIzaSy...">
+    </div>
+
+    <div class="form-group">
+      <label for="openrouter-key">Ключ OpenRouter:</label>
+      <input type="password" id="openrouter-key" placeholder="sk-or-v1-...">
+    </div>
+
+    <button id="save-btn">Сохранить</button>
+    <div id="status-msg"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
