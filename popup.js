@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 
   // Загружаем сохраненный текст при открытии попапа
-  chrome.storage.local.get(['editorSavedText', 'primaryProvider', 'googleApiKey', 'openrouterApiKey'], (result) => {
+  chrome.storage.local.get(['editorSavedText', 'primaryProvider', 'googleApiKey', 'openrouterApiKey', 'zaiApiKey'], (result) => {
     if (result.editorSavedText) {
       editorTextarea.value = result.editorSavedText;
     }
@@ -50,6 +50,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (result.openrouterApiKey) {
       openrouterKeyInput.value = result.openrouterApiKey;
+    }
+    if (result.zaiApiKey) {
+      document.getElementById('zai-key').value = result.zaiApiKey;
     }
   });
 
@@ -140,6 +143,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const providerSelect = document.getElementById('provider');
   const googleKeyInput = document.getElementById('google-key');
   const openrouterKeyInput = document.getElementById('openrouter-key');
+  const zaiKeyInput = document.getElementById('zai-key');
   const saveBtn = document.getElementById('save-btn');
   const statusMsg = document.getElementById('status-msg');
 
@@ -148,11 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const primaryProvider = providerSelect.value;
     const googleApiKey = googleKeyInput.value.trim();
     const openrouterApiKey = openrouterKeyInput.value.trim();
+    const zaiApiKey = zaiKeyInput.value.trim();
 
     chrome.storage.local.set({
       primaryProvider: primaryProvider,
       googleApiKey: googleApiKey,
-      openrouterApiKey: openrouterApiKey
+      openrouterApiKey: openrouterApiKey,
+      zaiApiKey: zaiApiKey
     }, () => {
       statusMsg.textContent = 'Настройки успешно сохранены!';
       setTimeout(() => {

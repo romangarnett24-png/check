@@ -121,6 +121,43 @@ async function queryOpenRouter(userText, mode, apiKey) {
   return data.choices[0].message.content.trim();
 }
 
+async function queryZai(userText, mode, apiKey) {
+  if (!apiKey) throw new Error('API ключ Z.ai не настроен');
+  const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.fix;
+
+  const requestBody = {
+    model: 'glm-5.2',
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userText },
+    ],
+    max_tokens: 2048,
+    temperature: 0.3,
+  };
+
+  const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData?.error?.message || `Z.ai API ошибка: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  const data = await response.json();
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    throw new Error('Неожиданный формат ответа от Z.ai API');
+  }
+
+  return data.choices[0].message.content.trim();
+}
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === 'ai-request') {
     const { text, mode } = message;
@@ -135,39 +172,38 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return false;
     }
 
-    chrome.storage.local.get(['primaryProvider', 'googleApiKey', 'openrouterApiKey'], async (result) => {
+    chrome.storage.local.get(['primaryProvider', 'googleApiKey', 'openrouterApiKey', 'zaiApiKey'], async (result) => {
       const provider = result.primaryProvider || 'google';
-      const googleKey = result.googleApiKey;
-      const orKey = result.openrouterApiKey;
+      const providers = [
+        { id: 'google', fn: queryGoogle, key: result.googleApiKey },
+        { id: 'openrouter', fn: queryOpenRouter, key: result.openrouterApiKey },
+        { id: 'zai', fn: queryZai, key: result.zaiApiKey }
+      ];
 
-      let firstAttempt, secondAttempt;
-      let firstKey, secondKey;
+      // Сортируем так, чтобы выбранный провайдер был первым
+      providers.sort((a, b) => {
+        if (a.id === provider) return -1;
+        if (b.id === provider) return 1;
+        return 0;
+      });
 
-      if (provider === 'google') {
-        firstAttempt = queryGoogle;
-        firstKey = googleKey;
-        secondAttempt = queryOpenRouter;
-        secondKey = orKey;
-      } else {
-        firstAttempt = queryOpenRouter;
-        firstKey = orKey;
-        secondAttempt = queryGoogle;
-        secondKey = googleKey;
+      let success = false;
+      let errors = [];
+
+      for (const p of providers) {
+        try {
+          const resultText = await p.fn(text, mode, p.key);
+          sendResponse({ success: true, text: resultText });
+          success = true;
+          break; // Успешно ответил, выходим из цикла
+        } catch (err) {
+          console.error(`Провайдер ${p.id} не ответил:`, err);
+          errors.push(`${p.id}: ${err.message}`);
+        }
       }
 
-      try {
-        const resultText = await firstAttempt(text, mode, firstKey);
-        sendResponse({ success: true, text: resultText });
-      } catch (err1) {
-        console.error('Первый провайдер не ответил:', err1);
-        try {
-          // Если первый провалился, пробуем второй
-          const resultText2 = await secondAttempt(text, mode, secondKey);
-          sendResponse({ success: true, text: resultText2 });
-        } catch (err2) {
-          console.error('Второй провайдер также не ответил:', err2);
-          sendResponse({ success: false, error: `Оба провайдера недоступны. Ошибка 1: ${err1.message}. Ошибка 2: ${err2.message}` });
-        }
+      if (!success) {
+        sendResponse({ success: false, error: `Все провайдеры недоступны. Подробности: ${errors.join(' | ')}` });
       }
     });
 
