@@ -121,6 +121,52 @@ async function queryOpenRouter(userText, mode, apiKey) {
   return data.choices[0].message.content.trim();
 }
 
+async function queryLocal(userText, mode, url) {
+  if (!url) throw new Error('URL локальной LLM не настроен');
+
+  // Обеспечиваем корректный endpoint, если пользователь ввёл только базовый URL
+  let endpoint = url;
+  if (!endpoint.endsWith('/chat/completions')) {
+    if (!endpoint.endsWith('/')) {
+      endpoint += '/';
+    }
+    endpoint += 'chat/completions';
+  }
+
+  const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.fix;
+
+  const requestBody = {
+    model: 'local-model', // Обычно локальные серверы игнорируют это поле или принимают любое
+    messages: [
+      { role: 'system', content: systemPrompt },
+      { role: 'user', content: userText },
+    ],
+    max_tokens: 2048,
+    temperature: 0.3,
+  };
+
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(requestBody),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    const errorMessage = errorData?.error?.message || `Local LLM ошибка: ${response.status}`;
+    throw new Error(errorMessage);
+  }
+
+  const data = await response.json();
+  if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+    throw new Error('Неожиданный формат ответа от Local LLM');
+  }
+
+  return data.choices[0].message.content.trim();
+}
+
 async function queryZai(userText, mode, apiKey) {
   if (!apiKey) throw new Error('API ключ Z.ai не настроен');
   const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.fix;
@@ -172,12 +218,13 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       return false;
     }
 
-    chrome.storage.local.get(['primaryProvider', 'googleApiKey', 'openrouterApiKey', 'zaiApiKey'], async (result) => {
+    chrome.storage.local.get(['primaryProvider', 'googleApiKey', 'openrouterApiKey', 'zaiApiKey', 'localUrl'], async (result) => {
       const provider = result.primaryProvider || 'google';
       const providers = [
         { id: 'google', fn: queryGoogle, key: result.googleApiKey },
         { id: 'openrouter', fn: queryOpenRouter, key: result.openrouterApiKey },
-        { id: 'zai', fn: queryZai, key: result.zaiApiKey }
+        { id: 'zai', fn: queryZai, key: result.zaiApiKey },
+        { id: 'local', fn: queryLocal, key: result.localUrl }
       ];
 
       // Сортируем так, чтобы выбранный провайдер был первым
