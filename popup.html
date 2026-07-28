@@ -9,12 +9,16 @@
   <div class="container">
     <div class="tabs">
       <button class="tab-btn active" data-target="tab-editor">Редактор</button>
+      <button class="tab-btn" data-target="tab-templates">Шаблоны</button>
       <button class="tab-btn" data-target="tab-settings">Настройки</button>
     </div>
 
     <!-- Вкладка Редактор -->
     <div id="tab-editor" class="tab-content active">
       <textarea id="editor-textarea" placeholder="Вставьте текст для проверки..."></textarea>
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+        <button id="save-template-btn" class="ai-btn-small" style="flex: 0; white-space: nowrap;">💾 Сохранить как шаблон</button>
+      </div>
 
       <div class="editor-actions">
         <div class="primary-actions">
@@ -93,6 +97,16 @@
 
       <button id="save-btn" class="primary-btn">Сохранить</button>
       <div id="status-msg"></div>
+    </div>
+
+    <!-- Вкладка Шаблоны -->
+    <div id="tab-templates" class="tab-content">
+      <div id="templates-list">
+        <!-- Шаблоны будут генерироваться здесь -->
+      </div>
+      <div id="no-templates-msg" style="display: none; text-align: center; color: #94a3b8; font-size: 13px; margin-top: 20px;">
+        У вас пока нет сохраненных шаблонов.<br>Создайте их во вкладке «Редактор».
+      </div>
     </div>
   </div>
 

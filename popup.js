@@ -141,6 +141,100 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- Шаблоны ---
+  const saveTemplateBtn = document.getElementById('save-template-btn');
+  const templatesList = document.getElementById('templates-list');
+  const noTemplatesMsg = document.getElementById('no-templates-msg');
+  let templates = [];
+
+  function renderTemplates() {
+    templatesList.innerHTML = '';
+    if (templates.length === 0) {
+      noTemplatesMsg.style.display = 'block';
+      return;
+    }
+    noTemplatesMsg.style.display = 'none';
+
+    templates.forEach((text, index) => {
+      const card = document.createElement('div');
+      card.className = 'template-card';
+
+      const textEl = document.createElement('div');
+      textEl.className = 'template-text';
+      textEl.textContent = text;
+
+      const actionsEl = document.createElement('div');
+      actionsEl.className = 'template-actions';
+
+      const insertBtn = document.createElement('button');
+      insertBtn.className = 'ai-btn-small';
+      insertBtn.textContent = 'Вставить';
+      insertBtn.onclick = () => {
+        insertTemplateToPage(text, insertBtn);
+      };
+
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'template-delete-btn';
+      deleteBtn.textContent = '🗑 Удалить';
+      deleteBtn.onclick = () => {
+        templates.splice(index, 1);
+        chrome.storage.local.set({ savedTemplates: templates }, renderTemplates);
+      };
+
+      actionsEl.appendChild(insertBtn);
+      actionsEl.appendChild(deleteBtn);
+
+      card.appendChild(textEl);
+      card.appendChild(actionsEl);
+      templatesList.appendChild(card);
+    });
+  }
+
+  function insertTemplateToPage(text, btn) {
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (!tabs[0]) return fallbackCopy(text, btn);
+
+      chrome.tabs.sendMessage(tabs[0].id, { type: 'insert-template', text: text }, function(response) {
+        if (chrome.runtime.lastError || !response || !response.success) {
+          fallbackCopy(text, btn);
+        } else {
+          const original = btn.textContent;
+          btn.textContent = 'Вставлено!';
+          setTimeout(() => btn.textContent = original, 2000);
+        }
+      });
+    });
+  }
+
+  function fallbackCopy(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const original = btn.textContent;
+      btn.textContent = 'Скопировано (вставить не вышло)';
+      setTimeout(() => btn.textContent = original, 2000);
+    });
+  }
+
+  chrome.storage.local.get(['savedTemplates'], (result) => {
+    if (result.savedTemplates && Array.isArray(result.savedTemplates)) {
+      templates = result.savedTemplates;
+    }
+    renderTemplates();
+  });
+
+  saveTemplateBtn.addEventListener('click', () => {
+    const text = editorTextarea.value.trim();
+    if (!text) {
+      showError('Введите текст для сохранения.');
+      return;
+    }
+    templates.unshift(text); // Добавляем в начало списка
+    chrome.storage.local.set({ savedTemplates: templates }, () => {
+      renderTemplates();
+      const original = saveTemplateBtn.textContent;
+      saveTemplateBtn.textContent = '✓ Сохранено!';
+      setTimeout(() => saveTemplateBtn.textContent = original, 2000);
+    });
+  });
 
   // --- Настройки ---
   const providerSelect = document.getElementById('provider');

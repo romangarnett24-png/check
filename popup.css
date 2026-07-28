@@ -195,6 +195,72 @@ body {
 }
 #copy-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
 
+/* Шаблоны */
+#templates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+#templates-list::-webkit-scrollbar {
+  width: 6px;
+}
+#templates-list::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 4px;
+}
+
+.template-card {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.template-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #e2e8f0;
+  max-height: 80px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+}
+
+.template-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.template-actions .ai-btn-small {
+  text-align: center;
+  flex: 1;
+}
+
+.template-delete-btn {
+  background: transparent;
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.template-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
 h2 {
   font-size: 16px;
   margin: 0;

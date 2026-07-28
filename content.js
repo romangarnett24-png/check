@@ -691,4 +691,47 @@
     if (e.key === 'Escape') hideAll();
   });
 
+  // =============================================
+  // Слушатель для вставки шаблонов
+  // =============================================
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    if (message.type === 'insert-template') {
+      const textToInsert = message.text;
+
+      if (lastActiveElement) {
+        lastActiveElement.focus();
+        if (isContentEditable(lastActiveElement)) {
+          let sel = window.getSelection();
+          if (sel && sel.rangeCount > 0) {
+            let range = sel.getRangeAt(0);
+            range.deleteContents();
+            let textNode = document.createTextNode(textToInsert);
+            range.insertNode(textNode);
+            range.setStartAfter(textNode);
+            range.collapse(true);
+            sel.removeAllRanges();
+            sel.addRange(range);
+          } else {
+             // Fallback если нет range
+             document.execCommand('insertText', false, textToInsert);
+          }
+          lastActiveElement.dispatchEvent(new Event('input', { bubbles: true }));
+        } else if (isStandardInput(lastActiveElement)) {
+          let start = lastActiveElement.selectionStart || 0;
+          let end = lastActiveElement.selectionEnd || 0;
+          let val = lastActiveElement.value;
+          lastActiveElement.value = val.substring(0, start) + textToInsert + val.substring(end);
+          lastActiveElement.selectionStart = lastActiveElement.selectionEnd = start + textToInsert.length;
+          lastActiveElement.dispatchEvent(new Event('input', { bubbles: true }));
+          lastActiveElement.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+        sendResponse({ success: true });
+      } else {
+        // Если поле не найдено, возвращаем ошибку, чтобы popup скопировал в буфер
+        sendResponse({ success: false, error: 'No active element found' });
+      }
+      return true;
+    }
+  });
+
 })();
