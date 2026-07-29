@@ -26,6 +26,8 @@
     currentMode: null,
     isContentEditable: false,
     isGeneralPage: false,
+    recognition: null,
+    isRecording: false,
   };
 
   let currentSelectionKey = '';
@@ -89,6 +91,8 @@
     .tai-btn-fix { background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25); }
     .tai-btn-fix:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.45); background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%); }
     .tai-btn-fix:active { transform: scale(0.97) translateY(0); }
+    .tai-btn-voice { background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); box-shadow: 0 2px 6px rgba(20, 184, 166, 0.25); }
+    .tai-btn-voice:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.45); }
 
     /* Скрываемое меню с дополнительными опциями */
     .tai-btn-more { width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); color: #e2e8f0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; padding: 0; }
@@ -165,8 +169,16 @@
   btnFix.onmousedown = (e) => { e.preventDefault(); e.stopPropagation(); };
   btnFix.onclick = (e) => { e.stopPropagation(); handleAction('fix'); };
 
+  const btnVoice = document.createElement('button');
+  btnVoice.className = 'tai-btn tai-btn-voice';
+  btnVoice.textContent = '🎙 Голос';
+  btnVoice.setAttribute('aria-label', 'Голосовой ввод');
+  btnVoice.onmousedown = (e) => { e.preventDefault(); e.stopPropagation(); };
+  btnVoice.onclick = (e) => { e.stopPropagation(); toggleVoiceInput(); };
+
   primaryBtnsWrap.appendChild(btnImprove);
   primaryBtnsWrap.appendChild(btnFix);
+  primaryBtnsWrap.appendChild(btnVoice);
 
   const btnMore = document.createElement('button');
   btnMore.className = 'tai-btn-more';
@@ -232,6 +244,19 @@
   panelLoading.style.display = 'none';
   wrap.appendChild(panelLoading);
 
+  const panelVoice = document.createElement('div');
+  panelVoice.className = 'tai-loading tai-voice-panel';
+  panelVoice.style.display = 'none';
+  const voiceStatus = document.createElement('span');
+  voiceStatus.textContent = 'Слушаю…';
+  const btnStopVoice = document.createElement('button');
+  btnStopVoice.className = 'tai-btn-cancel';
+  btnStopVoice.textContent = 'Остановить';
+  btnStopVoice.onclick = (e) => { e.stopPropagation(); stopVoiceInput(); };
+  panelVoice.appendChild(voiceStatus);
+  panelVoice.appendChild(btnStopVoice);
+  wrap.appendChild(panelVoice);
+
   // --- 3. Панель результата ---
   const panelResult = document.createElement('div');
   panelResult.className = 'tai-result';
@@ -293,6 +318,7 @@
   function showPanel(panel) {
     panelMenu.style.display = 'none';
     panelLoading.style.display = 'none';
+    panelVoice.style.display = 'none';
     panelResult.style.display = 'none';
     panelError.style.display = 'none';
     panelMenu.classList.remove('tai-expanded');
@@ -302,13 +328,71 @@
   }
 
   function hideAll() {
+    stopVoiceInput();
     panelMenu.style.display = 'none';
     panelLoading.style.display = 'none';
+    panelVoice.style.display = 'none';
     panelResult.style.display = 'none';
     panelError.style.display = 'none';
     wrap.classList.remove('tai-show');
     currentSelectionKey = '';
     state.currentMode = null;
+  }
+
+  function getSpeechRecognition() {
+    return window.SpeechRecognition || window.webkitSpeechRecognition;
+  }
+
+  function toggleVoiceInput() {
+    if (state.isRecording) { stopVoiceInput(); return; }
+    const Recognition = getSpeechRecognition();
+    if (!Recognition) {
+      showError('Голосовой ввод не поддерживается этим браузером. Откройте страницу в Chrome.');
+      return;
+    }
+    const recognition = new Recognition();
+    state.recognition = recognition;
+    state.isRecording = true;
+    recognition.lang = 'ru-RU';
+    recognition.interimResults = false;
+    recognition.continuous = false;
+    recognition.onresult = (event) => {
+      const text = Array.from(event.results).map((result) => result[0].transcript).join(' ').trim();
+      if (text) insertVoiceText(text);
+    };
+    recognition.onerror = (event) => {
+      const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+        ? 'Доступ к микрофону запрещён. Разрешите микрофон в настройках браузера.'
+        : event.error === 'no-speech' ? 'Речь не распознана. Попробуйте ещё раз.'
+        : 'Не удалось распознать речь. Попробуйте ещё раз.';
+      stopVoiceInput();
+      showError(message);
+    };
+    recognition.onend = () => { if (state.isRecording) stopVoiceInput(); };
+    showPanel(panelVoice);
+    try { recognition.start(); } catch (error) { stopVoiceInput(); showError('Не удалось начать запись. Проверьте доступ к микрофону.'); }
+  }
+
+  function stopVoiceInput() {
+    if (state.recognition) {
+      const recognition = state.recognition;
+      state.recognition = null;
+      state.isRecording = false;
+      try { recognition.stop(); } catch (error) { /* already stopped */ }
+    }
+    if (panelVoice.style.display !== 'none') panelVoice.style.display = 'none';
+  }
+
+  function insertVoiceText(text) {
+    if (state.isContentEditable && state.activeElement && state.savedRange) {
+      state.resultText = text;
+      applyContentEditable(state.activeElement, state.savedRange);
+      return;
+    }
+    if (state.activeElement && isStandardInput(state.activeElement)) {
+      state.resultText = text;
+      applyStandardInput(state.activeElement, state.selectionStart, state.selectionEnd);
+    }
   }
 
   function showError(msg) {
@@ -689,6 +773,10 @@
 
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') hideAll();
+  });
+  window.addEventListener('blur', stopVoiceInput);
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) stopVoiceInput();
   });
 
   // =============================================
