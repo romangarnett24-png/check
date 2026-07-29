@@ -16,15 +16,15 @@
     <!-- Вкладка Редактор -->
     <div id="tab-editor" class="tab-content active">
       <textarea id="editor-textarea" placeholder="Вставьте текст для проверки..."></textarea>
-      <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
-        <button id="save-template-btn" class="ai-btn-small" style="flex: 0; white-space: nowrap;">💾 Сохранить как шаблон</button>
+      <div class="editor-toolbar">
+        <button id="save-template-btn" class="ai-btn-small">💾 Сохранить как шаблон</button>
+        <button id="voice-btn" class="ai-btn voice-btn" type="button">🎙 Голос</button>
       </div>
 
       <div class="editor-actions">
         <div class="primary-actions">
           <button class="ai-btn" data-mode="improve">Улучшить</button>
           <button class="ai-btn" data-mode="fix">Исправить ошибки</button>
-          <button id="voice-btn" class="ai-btn voice-btn" type="button">🎙 Голос</button>
         </div>
 
         <div class="secondary-actions">

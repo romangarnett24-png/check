@@ -20,4 +20,14 @@ grep -q "SpeechRecognition" content.js
 grep -q "not-allowed" content.js
 grep -q "insertVoiceText" content.js
 
+# The voice control sits opposite the template-save action in the editor toolbar.
+node <<'NODE'
+const fs = require('fs');
+const html = fs.readFileSync('popup.html', 'utf8');
+const toolbar = html.match(/<div class="editor-toolbar">([\s\S]*?)<\/div>/);
+if (!toolbar) throw new Error('editor toolbar is missing');
+if (!toolbar[1].includes('id="save-template-btn"')) throw new Error('template action is not in editor toolbar');
+if (!toolbar[1].includes('id="voice-btn"')) throw new Error('voice action is not opposite template action');
+NODE
+
 echo "UI structure checks passed"
