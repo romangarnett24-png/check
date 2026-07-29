@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Настройки AI Text Improver</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="tabs">
+      <button class="tab-btn active" data-target="tab-editor">Редактор</button>
+      <button class="tab-btn" data-target="tab-templates">Шаблоны</button>
+      <button class="tab-btn" data-target="tab-settings">Настройки</button>
+    </div>
+
+    <!-- Вкладка Редактор -->
+    <div id="tab-editor" class="tab-content active">
+      <textarea id="editor-textarea" placeholder="Вставьте текст для проверки..."></textarea>
+      <div style="display: flex; justify-content: flex-end; margin-bottom: 8px;">
+        <button id="save-template-btn" class="ai-btn-small" style="flex: 0; white-space: nowrap;">💾 Сохранить как шаблон</button>
+      </div>
+
+      <div class="editor-actions">
+        <div class="primary-actions">
+          <button class="ai-btn" data-mode="improve">Улучшить</button>
+          <button class="ai-btn" data-mode="fix">Исправить ошибки</button>
+        </div>
+
+        <div class="secondary-actions">
+          <button class="ai-btn-small" data-mode="tone_professional">Проф.</button>
+          <button class="ai-btn-small" data-mode="tone_friendly">Дружелюб.</button>
+          <button class="ai-btn-small" data-mode="tone_confident">Уверен.</button>
+          <button class="ai-btn-small" data-mode="tone_casual">Повседнев.</button>
+        </div>
+
+        <div class="secondary-actions">
+          <button class="ai-btn-small" data-mode="length_shorten">Короче</button>
+          <button class="ai-btn-small" data-mode="length_expand">Длиннее</button>
+          <button class="ai-btn-small" data-mode="translate_english">EN</button>
+          <button class="ai-btn-small" data-mode="translate_russian">RU</button>
+        </div>
+      </div>
+
+      <div id="editor-loading" style="display: none;">
+        <div class="spin"></div>
+        <span>Обработка ИИ...</span>
+      </div>
+
+      <div id="editor-error" style="display: none;"></div>
+
+      <div id="editor-result" style="display: none;">
+        <div class="result-header">
+          <span id="result-label">Результат:</span>
+          <button id="copy-btn">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="14" height="14"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+            Скопировать
+          </button>
+        </div>
+        <div id="result-content"></div>
+        <div id="result-explanation"></div>
+      </div>
+    </div>
+
+    <!-- Вкладка Настройки -->
+    <div id="tab-settings" class="tab-content">
+      <h2>Настройки API-ключей</h2>
+
+      <div class="form-group">
+        <label for="provider">Основной провайдер ИИ:</label>
+        <select id="provider">
+          <option value="google">Google AI Studio (Gemini)</option>
+          <option value="openrouter">OpenRouter</option>
+          <option value="zai">Z.ai (GLM-5.2)</option>
+          <option value="local">Local LLM</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="google-key">Ключ Google AI Studio (Gemini):</label>
+        <input type="password" id="google-key" placeholder="AIzaSy...">
+      </div>
+
+      <div class="form-group">
+        <label for="openrouter-key">Ключ OpenRouter:</label>
+        <input type="password" id="openrouter-key" placeholder="sk-or-v1-...">
+      </div>
+
+      <div class="form-group">
+        <label for="zai-key">Ключ Z.ai:</label>
+        <input type="password" id="zai-key" placeholder="Вставьте ключ z.ai...">
+      </div>
+
+      <div class="form-group">
+        <label for="local-url">URL локальной сети (Local LLM):</label>
+        <input type="text" id="local-url" placeholder="http://localhost:1234/v1">
+      </div>
+
+      <button id="save-btn" class="primary-btn">Сохранить</button>
+      <div id="status-msg"></div>
+    </div>
+
+    <!-- Вкладка Шаблоны -->
+    <div id="tab-templates" class="tab-content">
+      <div id="templates-list">
+        <!-- Шаблоны будут генерироваться здесь -->
+      </div>
+      <div id="no-templates-msg" style="display: none; text-align: center; color: #94a3b8; font-size: 13px; margin-top: 20px;">
+        У вас пока нет сохраненных шаблонов.<br>Создайте их во вкладке «Редактор».
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

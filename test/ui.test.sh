@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-test -f index.html
-test -f styles.css
-grep -q 'data-testid="today-progress"' index.html
-grep -q 'data-testid="quick-add"' index.html
-grep -q '#f7f8f5' styles.css
-grep -q 'prefers-reduced-motion' styles.css
+test -f popup.html
+test -f popup.css
+test -f popup.js
+test -f manifest.json
+grep -q 'id="editor-textarea"' popup.html
+grep -q 'id="tab-settings"' popup.html
+grep -q '#f8fafc' popup.css
+grep -q 'prefers-reduced-motion' popup.css
+grep -q 'aria-label' popup.html
 
 echo "UI structure checks passed"
