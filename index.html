@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8f5" />
+    <title>Check — спокойный прогресс</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <nav class="nav" aria-label="Основная навигация">
+        <a class="brand" href="#" aria-label="Check — на главную"><span class="brand-mark">✓</span><span>check</span></a>
+        <div class="nav-actions"><button class="icon-button" aria-label="Уведомления">♧</button><button class="avatar" aria-label="Профиль пользователя">Р</button></div>
+      </nav>
+
+      <section class="welcome" aria-labelledby="page-title">
+        <div><p class="eyebrow">Вторник, 14 мая</p><h1 id="page-title">Доброе утро,<br /><em>Роман.</em></h1></div>
+        <div class="streak" aria-label="Серия из 7 дней"><span class="streak-icon">✦</span><strong>7</strong><span>дней подряд</span></div>
+      </section>
+
+      <section class="progress-card" data-testid="today-progress" aria-labelledby="progress-title">
+        <div class="progress-copy"><div class="section-label"><span class="status-dot"></span> Сегодня</div><h2 id="progress-title">Маленькие шаги,<br />большие перемены.</h2><p>Ты уже сделал больше, чем вчера. Продолжай в своём ритме.</p></div>
+        <div class="progress-ring" aria-label="Прогресс 68 процентов"><span>68<small>%</small></span></div>
+      </section>
+
+      <section class="tasks" aria-labelledby="tasks-title">
+        <div class="section-heading"><h2 id="tasks-title">Твои фокусы</h2><button class="text-button">Все задачи <span>→</span></button></div>
+        <div class="task-list">
+          <article class="task is-done"><button class="check" aria-label="Отметить выполненной" aria-pressed="true">✓</button><div><h3>Прогулка на свежем воздухе</h3><p>Здоровье <span>·</span> 20 мин</p></div><span class="task-time">09:00</span></article>
+          <article class="task"><button class="check" aria-label="Отметить выполненной" aria-pressed="false"></button><div><h3>Подготовить презентацию</h3><p>Работа <span>·</span> 45 мин</p></div><span class="task-time">11:30</span></article>
+          <article class="task"><button class="check" aria-label="Отметить выполненной" aria-pressed="false"></button><div><h3>Позвонить маме</h3><p>Личное <span>·</span> 15 мин</p></div><span class="task-time">18:00</span></article>
+        </div>
+        <button class="quick-add" data-testid="quick-add"><span>+</span> Добавить задачу</button>
+      </section>
+
+      <footer><span>Сделано с заботой о твоём фокусе</span><span class="footer-mark">✦</span></footer>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
