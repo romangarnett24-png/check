@@ -85,6 +85,8 @@ body {
   gap: 8px;
 }
 
+.voice-btn.is-listening { background: #b91c1c; }
+
 .primary-actions {
   display: flex;
   gap: 8px;

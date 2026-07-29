@@ -91,8 +91,6 @@
     .tai-btn-fix { background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%); box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25); }
     .tai-btn-fix:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(79, 70, 229, 0.45); background: linear-gradient(135deg, #6366f1 0%, #22d3ee 100%); }
     .tai-btn-fix:active { transform: scale(0.97) translateY(0); }
-    .tai-btn-voice { background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%); box-shadow: 0 2px 6px rgba(20, 184, 166, 0.25); }
-    .tai-btn-voice:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(20, 184, 166, 0.45); }
 
     /* Скрываемое меню с дополнительными опциями */
     .tai-btn-more { width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.15); color: #e2e8f0; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; padding: 0; }
@@ -169,16 +167,8 @@
   btnFix.onmousedown = (e) => { e.preventDefault(); e.stopPropagation(); };
   btnFix.onclick = (e) => { e.stopPropagation(); handleAction('fix'); };
 
-  const btnVoice = document.createElement('button');
-  btnVoice.className = 'tai-btn tai-btn-voice';
-  btnVoice.textContent = '🎙 Голос';
-  btnVoice.setAttribute('aria-label', 'Голосовой ввод');
-  btnVoice.onmousedown = (e) => { e.preventDefault(); e.stopPropagation(); };
-  btnVoice.onclick = (e) => { e.stopPropagation(); toggleVoiceInput(); };
-
   primaryBtnsWrap.appendChild(btnImprove);
   primaryBtnsWrap.appendChild(btnFix);
-  primaryBtnsWrap.appendChild(btnVoice);
 
   const btnMore = document.createElement('button');
   btnMore.className = 'tai-btn-more';

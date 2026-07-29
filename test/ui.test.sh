@@ -11,8 +11,10 @@ grep -q '#f8fafc' popup.css
 grep -q 'prefers-reduced-motion' popup.css
 grep -q 'aria-label' popup.html || grep -q 'aria-label' content.js
 
-# Voice widget contract (TDD: these checks fail until voice input is wired).
-grep -q "🎙 Голос" content.js
+# Voice editor contract: the control belongs to the popup editor, not the page widget.
+grep -q 'id="voice-btn"' popup.html
+grep -q "🎙 Голос" popup.html
+! grep -q "🎙 Голос" content.js
 grep -q "Слушаю…" content.js
 grep -q "SpeechRecognition" content.js
 grep -q "not-allowed" content.js

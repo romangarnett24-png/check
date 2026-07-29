@@ -22,7 +22,61 @@ document.addEventListener('DOMContentLoaded', () => {
   const resultExplanation = document.getElementById('result-explanation');
   const resultLabel = document.getElementById('result-label');
   const copyBtn = document.getElementById('copy-btn');
+  const voiceBtn = document.getElementById('voice-btn');
   const aiBtns = document.querySelectorAll('.ai-btn, .ai-btn-small');
+  let voiceRecognition = null;
+
+  voiceBtn.addEventListener('click', () => {
+    if (voiceRecognition) {
+      voiceRecognition.stop();
+      return;
+    }
+
+    const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!Recognition) {
+      showError('Голосовой ввод не поддерживается этим браузером. Откройте popup в Chrome.');
+      return;
+    }
+
+    voiceRecognition = new Recognition();
+    voiceRecognition.lang = 'ru-RU';
+    voiceRecognition.interimResults = false;
+    voiceRecognition.continuous = false;
+    voiceBtn.textContent = 'Слушаю…';
+    voiceBtn.classList.add('is-listening');
+
+    voiceRecognition.onresult = (event) => {
+      const text = Array.from(event.results)
+        .map(result => result[0].transcript)
+        .join(' ')
+        .trim();
+      if (text) {
+        const start = editorTextarea.selectionStart;
+        const end = editorTextarea.selectionEnd;
+        editorTextarea.setRangeText(text, start, end, 'end');
+        editorTextarea.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    };
+    voiceRecognition.onerror = (event) => {
+      const message = event.error === 'not-allowed'
+        ? 'Нет доступа к микрофону. Разрешите его в настройках браузера.'
+        : 'Не удалось распознать речь. Попробуйте ещё раз.';
+      showError(message);
+    };
+    voiceRecognition.onend = () => {
+      voiceRecognition = null;
+      voiceBtn.textContent = '🎙 Голос';
+      voiceBtn.classList.remove('is-listening');
+    };
+    try {
+      voiceRecognition.start();
+    } catch (error) {
+      voiceRecognition = null;
+      voiceBtn.textContent = '🎙 Голос';
+      voiceBtn.classList.remove('is-listening');
+      showError('Не удалось начать запись. Проверьте доступ к микрофону.');
+    }
+  });
 
   const modeLabels = {
     'improve': 'Улучшенный стиль ИИ:',
