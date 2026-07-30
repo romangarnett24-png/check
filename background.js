@@ -49,7 +49,7 @@ async function queryGoogle(userText, mode, apiKey) {
 
   const requestBody = {
     system_instruction: {
-      parts: { text: systemPrompt }
+      parts: [{ text: systemPrompt }]
     },
     contents: [{
       parts: [{ text: userText }]
@@ -75,11 +75,15 @@ async function queryGoogle(userText, mode, apiKey) {
   }
 
   const data = await response.json();
-  if (!data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts[0].text) {
+  const responseText = data.candidates?.[0]?.content?.parts
+    ?.map((part) => part.text || '')
+    .join('')
+    .trim();
+  if (!responseText) {
     throw new Error('Неожиданный формат ответа от Google API');
   }
 
-  return data.candidates[0].content.parts[0].text.trim();
+  return responseText;
 }
 
 async function queryOpenRouter(userText, mode, apiKey) {
