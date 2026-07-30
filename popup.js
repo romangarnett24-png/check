@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Логика кнопок ИИ
   aiBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+      if (btn.id === 'voice-btn') return;
       const mode = btn.dataset.mode;
       const text = editorTextarea.value.trim();
 

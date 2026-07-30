@@ -15,9 +15,11 @@ grep -q 'aria-label' popup.html || grep -q 'aria-label' content.js
 grep -q 'id="voice-btn"' popup.html
 grep -q "🎙 Голос" popup.html
 ! grep -q "🎙 Голос" content.js
-grep -q '"audioCapture"' manifest.json
 grep -q "navigator.permissions" popup.js
 grep -q "permissionState" popup.js
+! grep -q '"audioCapture"' manifest.json
+grep -q "btn.dataset.mode" popup.js
+grep -q "if (btn.id === 'voice-btn') return" popup.js
 grep -q "Слушаю…" content.js
 grep -q "SpeechRecognition" content.js
 grep -q "not-allowed" content.js
