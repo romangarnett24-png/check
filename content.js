@@ -345,7 +345,7 @@
     state.isRecording = true;
     recognition.lang = 'ru-RU';
     recognition.interimResults = false;
-    recognition.continuous = false;
+    recognition.continuous = true;
     recognition.onresult = (event) => {
       const text = Array.from(event.results).map((result) => result[0].transcript).join(' ').trim();
       if (text) insertVoiceText(text);
@@ -358,7 +358,10 @@
       stopVoiceInput();
       showError(message);
     };
-    recognition.onend = () => { if (state.isRecording) stopVoiceInput(); };
+    recognition.onend = () => {
+      if (!state.isRecording || state.recognition !== recognition) return;
+      try { recognition.start(); } catch (error) { /* browser is already restarting */ }
+    };
     showPanel(panelVoice);
     try { recognition.start(); } catch (error) { stopVoiceInput(); showError('Не удалось начать запись. Проверьте доступ к микрофону.'); }
   }

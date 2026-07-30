@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const voiceBtn = document.getElementById('voice-btn');
   const aiBtns = document.querySelectorAll('.ai-btn, .ai-btn-small');
   let voiceRecognition = null;
+  let voiceStopRequested = false;
 
   async function getMicrophonePermissionState() {
     if (!navigator.permissions || !navigator.permissions.query) return 'prompt';
@@ -50,9 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     voiceRecognition = new Recognition();
+    voiceStopRequested = false;
     voiceRecognition.lang = 'ru-RU';
     voiceRecognition.interimResults = false;
-    voiceRecognition.continuous = false;
+    voiceRecognition.continuous = true;
     voiceBtn.textContent = 'Слушаю…';
     voiceBtn.classList.add('is-listening');
 
@@ -69,12 +71,17 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
     voiceRecognition.onerror = (event) => {
+      voiceStopRequested = true;
       const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
         ? 'Доступ к микрофону заблокирован. Разрешите микрофон для расширения в настройках Chrome и повторите попытку.'
         : 'Не удалось распознать речь. Попробуйте ещё раз.';
       showError(message);
     };
     voiceRecognition.onend = () => {
+      if (!voiceStopRequested && voiceRecognition) {
+        try { voiceRecognition.start(); } catch (error) { /* browser is already restarting */ }
+        return;
+      }
       voiceRecognition = null;
       voiceBtn.textContent = '🎙 Голос';
       voiceBtn.classList.remove('is-listening');
@@ -82,6 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       voiceRecognition.start();
     } catch (error) {
+      voiceStopRequested = true;
       voiceRecognition = null;
       voiceBtn.textContent = '🎙 Голос';
       voiceBtn.classList.remove('is-listening');
@@ -91,6 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   voiceBtn.addEventListener('click', async () => {
     if (voiceRecognition) {
+      voiceStopRequested = true;
       voiceRecognition.stop();
       return;
     }
