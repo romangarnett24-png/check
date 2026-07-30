@@ -9,7 +9,8 @@ grep -q 'id="editor-textarea"' popup.html
 grep -q 'id="tab-settings"' popup.html
 grep -q '#f8fafc' popup.css
 grep -q 'prefers-reduced-motion' popup.css
-grep -q 'aria-label' popup.html || grep -q 'aria-label' content.js
+grep -q 'aria-label="Голосовой ввод"' popup.html
+grep -q 'aria-label="Сохранить как шаблон"' popup.html
 
 # Voice editor contract: the control belongs to the popup editor, not the page widget.
 grep -q 'id="voice-btn"' popup.html
