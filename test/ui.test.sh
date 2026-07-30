@@ -25,8 +25,8 @@ grep -q "Слушаю…" content.js
 grep -q "SpeechRecognition" content.js
 grep -q "continuous = true" popup.js
 grep -q "continuous = true" content.js
-grep -q "if (voiceRecognition) voiceRecognition.start()" popup.js
-grep -q "if (state.isRecording) recognition.start()" content.js
+grep -q "voiceRecognition.start()" popup.js
+grep -q "recognition.start()" content.js
 grep -q "not-allowed" content.js
 grep -q "insertVoiceText" content.js
 
