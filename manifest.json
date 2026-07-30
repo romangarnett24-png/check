@@ -5,7 +5,8 @@
   "description": "Улучшение стиля и исправление ошибок в тексте с помощью ИИ (OpenRouter)",
   "permissions": [
     "activeTab",
-    "storage"
+    "storage",
+    "audioCapture"
   ],
   "host_permissions": [
     "https://openrouter.ai/*",

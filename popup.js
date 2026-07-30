@@ -26,9 +26,20 @@ document.addEventListener('DOMContentLoaded', () => {
   const aiBtns = document.querySelectorAll('.ai-btn, .ai-btn-small');
   let voiceRecognition = null;
 
-  voiceBtn.addEventListener('click', () => {
-    if (voiceRecognition) {
-      voiceRecognition.stop();
+  async function getMicrophonePermissionState() {
+    if (!navigator.permissions || !navigator.permissions.query) return 'prompt';
+    try {
+      const permission = await navigator.permissions.query({ name: 'microphone' });
+      return permission.state;
+    } catch (error) {
+      return 'prompt';
+    }
+  }
+
+  async function startVoiceRecognition() {
+    const permissionState = await getMicrophonePermissionState();
+    if (permissionState === 'denied') {
+      showError('Микрофон заблокирован для расширения. Откройте настройки разрешений Chrome и включите доступ к микрофону, затем нажмите «🎙 Голос» снова.');
       return;
     }
 
@@ -58,8 +69,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
     voiceRecognition.onerror = (event) => {
-      const message = event.error === 'not-allowed'
-        ? 'Нет доступа к микрофону. Разрешите его в настройках браузера.'
+      const message = event.error === 'not-allowed' || event.error === 'service-not-allowed'
+        ? 'Доступ к микрофону заблокирован. Разрешите микрофон для расширения в настройках Chrome и повторите попытку.'
         : 'Не удалось распознать речь. Попробуйте ещё раз.';
       showError(message);
     };
@@ -74,8 +85,16 @@ document.addEventListener('DOMContentLoaded', () => {
       voiceRecognition = null;
       voiceBtn.textContent = '🎙 Голос';
       voiceBtn.classList.remove('is-listening');
-      showError('Не удалось начать запись. Проверьте доступ к микрофону.');
+      showError('Не удалось начать запись. Проверьте доступ к микрофону и повторите попытку.');
     }
+  }
+
+  voiceBtn.addEventListener('click', async () => {
+    if (voiceRecognition) {
+      voiceRecognition.stop();
+      return;
+    }
+    await startVoiceRecognition();
   });
 
   const modeLabels = {
