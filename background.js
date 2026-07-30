@@ -45,7 +45,7 @@ const FALLBACK_MODELS = [
 async function queryGoogle(userText, mode, apiKey) {
   if (!apiKey) throw new Error('API ключ Google (Gemini) не настроен');
   const systemPrompt = SYSTEM_PROMPTS[mode] || SYSTEM_PROMPTS.fix;
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
 
   const requestBody = {
     system_instruction: {

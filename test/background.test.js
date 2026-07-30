@@ -28,7 +28,7 @@ vm.runInNewContext(fs.readFileSync('background.js', 'utf8'), context);
   const body = JSON.parse(requests[0].options.body);
   assert.deepStrictEqual(body.system_instruction.parts, [{ text: body.system_instruction.parts[0].text }]);
   assert.deepStrictEqual(body.contents, [{ parts: [{ text: 'Проверь текст' }] }]);
-  assert.strictEqual(requests[0].url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent?key=test-key');
+  assert.strictEqual(requests[0].url, 'https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=test-key');
   console.log('Gemini request contract passed');
 })().catch((error) => {
   console.error(error);
