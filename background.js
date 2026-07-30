@@ -60,30 +60,40 @@ async function queryGoogle(userText, mode, apiKey) {
     }
   };
 
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(requestBody)
-  });
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    const errorMessage = errorData?.error?.message || `Google API ошибка: ${response.status}`;
-    throw new Error(errorMessage);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMessage = errorData?.error?.message || `Google API ошибка: ${response.status}`;
+      const isTransient = response.status === 429 || response.status >= 500
+        || /high demand|перегруз/i.test(errorMessage);
+      if (isTransient && attempt === 0) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        continue;
+      }
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    const responseText = data.candidates?.[0]?.content?.parts
+      ?.map((part) => part.text || '')
+      .join('')
+      .trim();
+    if (!responseText) {
+      throw new Error('Неожиданный формат ответа от Google API');
+    }
+
+    return responseText;
   }
 
-  const data = await response.json();
-  const responseText = data.candidates?.[0]?.content?.parts
-    ?.map((part) => part.text || '')
-    .join('')
-    .trim();
-  if (!responseText) {
-    throw new Error('Неожиданный формат ответа от Google API');
-  }
-
-  return responseText;
+  throw new Error('Google API не ответил после повторной попытки');
 }
 
 async function queryOpenRouter(userText, mode, apiKey) {
